@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 
 class User(AbstractUser):
@@ -36,8 +37,7 @@ class UserLoginLog(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(
         _("created at"),
-        default=timezone.now,
-        auto_now_add=True,  # 최초로 만들어진 시점 저장
+        auto_now_add=True,
     )
     ip = models.CharField(
         max_length=39,  # IPv6
