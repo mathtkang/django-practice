@@ -1,9 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import (
-    Post,
-)
-from . import serializers
+from .models import Post
+from .serializers import PostSerializer
 from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
@@ -14,30 +12,41 @@ from rest_framework.exceptions import (
     ParseError,
     PermissionDenied,
 )
+from django.http import HttpResponse
 
 
 class Posts(APIView):
-    def get(self, request, board_id):
+    def get(self, request):
         """게시글 목록 조회"""
-        pass
+        all_posts = Post.objects.all()
+        serializers = PostSerializer(all_posts, many=True)
+        return Response(serializers.data)
 
-    def post(self, request, board_id):
+    def post(self, request):
         """게시글 생성"""
-        pass
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            new_post = serializer.save()
+            return Response(
+                PostSerializer(new_post).data,
+                status=HTTP_201_CREATED,
+            )
+        else:
+            return Response(serializer.errors)
 
 
 class PostsDetail(APIView):
     def get(self, request, board_id, id):
         """게시글 하나만 조회"""
-        pass
+        return HttpResponse("posts-detail/get")
 
     def put(self, request, board_id, id):
         """게시글 수정"""
-        pass
+        return HttpResponse("posts-detail/put")
 
     def delete(self, request, board_id, id):
         """게시글 삭제"""
-        pass
+        return HttpResponse("posts-detail/delete")
 
 
 class PostsLike(APIView):

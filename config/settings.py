@@ -30,8 +30,10 @@ SYSTEM_APPS = [
 
 CUSTOM_APPS = [
     "boards.apps.BoardsConfig",
-    "users.apps.UsersConfig",
+    "comments.apps.CommentsConfig",
+    "medias.apps.MediasConfig",
     "posts.apps.PostsConfig",
+    "users.apps.UsersConfig",
 ]
 
 

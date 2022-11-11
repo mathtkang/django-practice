@@ -6,7 +6,6 @@ from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
 )
-
 from django.conf import settings
 from rest_framework.exceptions import NotFound
 
