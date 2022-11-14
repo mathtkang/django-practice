@@ -1,12 +1,13 @@
-from django.urls import path, include
+from django.urls import path  # , include
 from . import views
+
 
 app_name = "posts"
 
-# /boards/{board-id}/posts/
+# /boards/posts/
 urlpatterns = [
     path("", views.Posts.as_view()),
-    path("<int:id>", views.PostsDetail.as_view()),
-    path("<int:id>/like", views.PostsLike.as_view()),
-    path("<int:id>/comments/", include("comments.urls")),
+    path("<int:id>", views.PostDetail.as_view()),
+    path("<int:id>/like", views.PostLike.as_view()),
+    # path("<int:id>/comments/", include("comments.urls")),
 ]

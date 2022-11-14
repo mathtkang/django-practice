@@ -1,7 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Post
-from .serializers import PostSerializer
+from boards.models import Board, Like
+from . import serializers
 from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
@@ -13,47 +14,80 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 from django.http import HttpResponse
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 
 class Posts(APIView):
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         """게시글 목록 조회"""
         all_posts = Post.objects.all()
-        serializers = PostSerializer(all_posts, many=True)
-        return Response(serializers.data)
+        serializer = serializers.PostSerializer(all_posts, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
         """게시글 생성"""
-        serializer = PostSerializer(data=request.data)
+        serializer = serializers.PostSerializer(data=request.data)
         if serializer.is_valid():
             new_post = serializer.save()
             return Response(
-                PostSerializer(new_post).data,
+                serializers.PostSerializer(new_post).data,
                 status=HTTP_201_CREATED,
             )
         else:
             return Response(serializer.errors)
 
 
-class PostsDetail(APIView):
-    def get(self, request, board_id, id):
+class PostDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, id):
+        try:
+            return Post.objects.get(id=id)
+        except Post.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, id):
         """게시글 하나만 조회"""
-        return HttpResponse("posts-detail/get")
+        serializer = serializers.PostSerializer(self.get_object(id))
+        return Response(serializer.data)
 
-    def put(self, request, board_id, id):
+    def put(self, request, id):
         """게시글 수정"""
-        return HttpResponse("posts-detail/put")
+        serializer = serializers.PostSerializer(
+            self.get_object(id),
+            data=request.data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            update_post = serializer.save()
+            return Response(serializers.PostSerializer(update_post).data)
+        else:
+            return Response(serializer.errors)
 
-    def delete(self, request, board_id, id):
+    def delete(self, request, id):
         """게시글 삭제"""
-        return HttpResponse("posts-detail/delete")
+        self.get_object(id).delete()
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
-class PostsLike(APIView):
-    def get(self, request, board_id, id):
+class PostLike(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id):
         """'좋아요'한 게시글 조회"""
-        pass
+        # all_likes = Like.objects.filter(user=request.user)
+        # serializer = serializers.LikeSerializer(
+        #     all_likes,
+        #     many=True,
+        #     context={"request": request},
+        # )
+        # return Response(serializer.data)
+        return HttpResponse("posts-like/get")
 
-    def post(self, request, board_id, id):
+    def post(self, request, id):
         """게시글 '좋아요' 누르기"""
-        pass
+        return HttpResponse("posts-like/post")

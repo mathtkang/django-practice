@@ -8,6 +8,8 @@ from rest_framework.status import (
 )
 from django.conf import settings
 from rest_framework.exceptions import NotFound
+from posts.models import Post
+from django.http import HttpResponse
 
 
 class Boards(APIView):
@@ -59,3 +61,44 @@ class BoardDetail(APIView):
         """게시판 삭제"""
         self.get_object(id).delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+
+class Posts(APIView):
+    def get_object(self, id):
+        try:
+            return Post.objects.get(board_id=id)
+        except Post.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, id):
+        """게시글 목록 조회"""
+        all_posts = Post.objects.all()
+        serializer = serializers.PostSerializer(self.get_object(id), many=True)
+        return Response(serializer.data)
+
+    def post(self, request, id):
+        """게시글 생성"""
+        serializer = serializers.PostSerializer(data=request.data)
+        if serializer.is_valid():
+            # board_id = request.data.get(Board.id = )
+            new_post = serializer.save()
+            return Response(
+                serializers.PostSerializer(new_post).data,
+                status=HTTP_201_CREATED,
+            )
+        else:
+            return Response(serializer.errors)
+
+
+class PostDetail(APIView):
+    def get(self, request, board_id, post_id):
+        """게시글 하나만 조회"""
+        return HttpResponse("posts-detail/get")
+
+    def put(self, request, board_id, post_id):
+        """게시글 수정"""
+        return HttpResponse("posts-detail/put")
+
+    def delete(self, request, board_id, post_id):
+        """게시글 삭제"""
+        return HttpResponse("posts-detail/delete")

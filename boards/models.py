@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import User
 from posts.models import Post
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 

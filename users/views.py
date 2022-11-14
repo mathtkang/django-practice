@@ -84,6 +84,8 @@ class Logout(APIView):
 
 
 class UserRole(APIView):
+    permission_classes = [IsAuthenticated]
+    # 여기에 그 사람이 관리자인지 확인하는게 필요할 것 같은데 이걸 잘 모르겠어요
     def put(self, request, id):
         """유저의 role 수정"""
         pass
