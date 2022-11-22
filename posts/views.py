@@ -23,9 +23,42 @@ class Posts(APIView):
 
     def get(self, request):
         """게시글 목록 조회"""
-        all_posts = Post.objects.all()
-        serializer = serializers.PostSerializer(all_posts, many=True)
+        board_id = request.query_params.get("board_id")
+        filter_title = request.query_params.get("filter_title", None)
+        filter_content = request.query_params.get("filter_content", None)
+        offset = int(request.query_params.get("offset", 0)) # (int) 어디서부터
+        count = int(request.query_params.get("count", 10))
+
+        # sort_by = request.query_params.get("sort_by")
+        sort_by = {
+            'created': '-created_at', #descending
+            'user_email': 'user_email', #ascending
+            'board_id': '-board_id', #descending
+            'board_name': 'board_name', #ascending
+        }
+
+        if not Board.objects.get(id__exact=board_id):
+            return HttpResponse('맞는 board id 가 없음')
+        else:
+            if filter_title == None:
+                search = Post.objects.filter(
+                    content__contains = filter_content
+                )
+            elif filter_content == None:
+                search = Post.objects.filter(
+                    title__contains = filter_title
+                )
+            else:
+                search = Post.objects.filter(
+                    title__contains = filter_title
+                ) & Post.objects.filter(
+                    content__contains = filter_content
+                )
+            serializer = serializers.PostSerializer(search[offset:count], many=True)
+            
         return Response(serializer.data)
+
+
 
     def post(self, request):
         """게시글 생성"""
@@ -91,3 +124,5 @@ class PostLike(APIView):
     def post(self, request, id):
         """게시글 '좋아요' 누르기"""
         return HttpResponse("posts-like/post")
+
+

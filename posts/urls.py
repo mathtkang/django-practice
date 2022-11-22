@@ -4,10 +4,9 @@ from . import views
 
 app_name = "posts"
 
-# /boards/posts/
+# /posts
 urlpatterns = [
     path("", views.Posts.as_view()),
     path("<int:id>", views.PostDetail.as_view()),
     path("<int:id>/like", views.PostLike.as_view()),
-    # path("<int:id>/comments/", include("comments.urls")),
 ]

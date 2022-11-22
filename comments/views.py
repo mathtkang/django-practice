@@ -38,3 +38,9 @@ class CommentsDetail(APIView):
     def delete(self, request, board_id, post_id, id):
         """댓글 삭제"""
         pass
+
+
+class Authstrategy:
+    def __call__(self) -> str:
+        # 클래스를 함수처럼 쓸 수 있다. 
+        pass

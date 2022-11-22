@@ -17,7 +17,7 @@ class Users(APIView):
         """본인 정보 조회"""
         user = request.user
         serializer = serializers.UserSerializer(user)
-        return Response(serializer.data)  # hihi banghae haeyaji
+        return Response(serializer.data)
 
     def put(self, request):
         """본인 프로필 수정"""
