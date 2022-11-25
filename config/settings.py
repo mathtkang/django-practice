@@ -1,5 +1,7 @@
 from pathlib import Path
 from config import secret
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,7 +32,6 @@ SYSTEM_APPS = [
 
 CUSTOM_APPS = [
     "boards.apps.BoardsConfig",
-    "comments.apps.CommentsConfig",
     "medias.apps.MediasConfig",
     "posts.apps.PostsConfig",
     "users.apps.UsersConfig",
@@ -133,3 +134,18 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # AbstractUser를 상속 맏은 User 모델을 사용하기 위함
 AUTH_USER_MODEL = "users.User"
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+}
