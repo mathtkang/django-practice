@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from .models import Post, Comment
 from boards.models import Board
 from posts.models import Like
+from users.models import User
 from . import serializers
 import json
 from django.http import JsonResponse, HttpResponse
@@ -48,10 +49,10 @@ class Posts(APIView):
         count = int(request.query_params.get("count", 10))
         sort_by = request.query_params.get("sort_by")
 
-        print(filter_title)
-        print(filter_content)
-        print(offset)
-        print(count)
+        # print(filter_title)
+        # print(filter_content)
+        # print(offset)
+        # print(count)
 
 
         if not (
@@ -132,41 +133,30 @@ class PostLike(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    # def get_object(self, post_id):
-    #     try:
-    #         return Like.objects.get(post_id=post_id)
-    #     except Like.DoesNotExist:
-    #         raise NotFound
-
-    def get(self, request: Request, post_id: int):
-        """'좋아요'한 게시글 모두 조회"""
-        all_likes = Like.objects.filter(user=request.user)
-        serializer = serializers.LikeSerializer(
-            all_likes,
-            many=True,
-            context={"request": request},
-        )
-        return Response(serializer.data)
-
     def post(self, request: Request, post_id: int):
-        """게시글 '좋아요' 누르기"""
+        """좋아요 누르기"""
         if not (
             Post.objects
             .filter(id__exact=post_id)
             .exists()
         ):
-            return JsonResponse({'message': 'Not found post'},  status=HTTP_401_UNAUTHORIZED)
+            return JsonResponse({'message': 'Not found post'},  status=HTTP_404_NOT_FOUND)
 
-        like = Like.objects.filter(user_id=request.user, post_id=post_id)
-
-        if like.exists():
-            like.delete()
-            return JsonResponse({'message': 'Delete liked post'},  status=HTTP_200_OK)
+        if (
+            Like.objects
+            .filter(
+                user_id=request.user.id,
+                post_id=post_id,
+            )
+            .exists()
+        ):
+            return JsonResponse({'message': 'Already like post'},  status=HTTP_400_BAD_REQUEST)
         
         serializer = serializers.LikeSerializer(
-            user_id=request.user,
-            post_id=post_id,
-            many=True,
+            data={  # type: ignore
+                "post_id": post_id,
+                "user_id": request.user.id,
+            }
         )
         if serializer.is_valid():
             new_like = serializer.save()
@@ -176,16 +166,25 @@ class PostLike(APIView):
             )
         else:
             return Response(serializer.errors)
+    
+    def delete(self, request: Request, post_id: int):
+        """좋아요 취소하기"""
+        if (
+            Like.objects
+            .filter(
+                user_id=request.user.id,
+                post_id=post_id,
+            )
+            .exists()
+        ):
+            Like.objects.get(post_id=post_id).delete()
+            return JsonResponse({'message': 'Removed like'}, status=HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=HTTP_400_BAD_REQUEST)
 
 class PostComments(APIView):
     
     permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get_object(self, post_id):
-        try:
-            return Post.objects.get(id=id)
-        except Post.DoesNotExist:
-            raise NotFound
 
     def get(self, request: Request, post_id: int):
         """댓글 조회"""
@@ -199,16 +198,24 @@ class PostComments(APIView):
 
     def post(self, request: Request, post_id: int):
         """댓글 생성 & 대댓글 작성"""
+        if not (
+            Post.objects
+            .filter(id__exact=post_id)
+            .exists()
+        ):
+            return JsonResponse({'message': 'Not found post'},  status=HTTP_404_NOT_FOUND)
 
-        serializer = serializers.CommentSerializer(data=request.data)  # type: ignore
+        serializer = serializers.CommentSerializer(data=request.data)
+
         if serializer.is_valid():
-            new_comments = serializer.save()
+            new_comment = serializer.save()
             return Response(
-                {"id": new_comments.id},
+                serializers.CommentSerializer(new_comment).data,
                 status=HTTP_201_CREATED,
             )
         else:
             return Response(serializer.errors)
+
 
 class PostCommentDetail(APIView):
 
@@ -216,16 +223,19 @@ class PostCommentDetail(APIView):
 
     def get_object(self, post_id, comment_id):
         try:
-            return Comment.objects.get(Q(post_id=post_id) & Q(comment_id=comment_id))
+            return Comment.objects.get(Q(post_id=post_id) & Q(id=comment_id))
         except Comment.DoesNotExist:
             raise NotFound
 
-    def put(self, request, post_id: int, comment_id: int):
+    def put(self, request: Request, post_id: int, comment_id: int):
         """댓글 수정"""
         serializer = serializers.CommentSerializer(
             self.get_object(post_id, comment_id),
-            data=request.data,
-            partial=True,
+            data={
+                **request.data,
+                "post_id": post_id,
+                "user_id": request.user.id,
+            },
         )
         if serializer.is_valid():
             update_comment = serializer.save()
