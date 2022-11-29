@@ -8,6 +8,7 @@ from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
 )
+from utils.auth import IsAdminUser
 
 
 class Users(APIView):
@@ -65,7 +66,7 @@ class Login(APIView):
             password=password,
         )
         if user:
-            login(request, user)
+            login(request, user) # TODO: token Authentication
             return Response({"ok": "Welcome!"})
         else:
             return Response(
@@ -84,8 +85,8 @@ class Logout(APIView):
 
 
 class UserRole(APIView):
-    permission_classes = [IsAuthenticated]
-    # 여기에 그 사람이 관리자인지 확인하는게 필요할 것 같은데 이걸 잘 모르겠어요
+    permission_classes = [IsAdminUser]
+
     def put(self, request, id):
         """유저의 role 수정"""
         pass
@@ -93,3 +94,4 @@ class UserRole(APIView):
 
 class ChangePassword(APIView):
     pass
+

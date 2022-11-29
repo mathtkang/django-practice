@@ -4,15 +4,17 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 
+class GenderChoices(models.TextChoices):
+    MALE = ("male", "Male")
+    FEMALE = ("female", "Female")
+
+
+class RoleChoices(models.TextChoices):
+    USER = ("user", "User")
+    ADMIN = ("admin", "Admin")
+
+
 class User(AbstractUser):
-    class GenderChoices(models.TextChoices):
-        MALE = ("male", "Male")
-        FEMALE = ("female", "Female")
-
-    class RoleChoices(models.TextChoices):
-        USER = ("user", "User")
-        ADMIN = ("admin", "Admin")
-
     email = models.EmailField(
         verbose_name="email",
         max_length=255,
