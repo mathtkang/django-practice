@@ -14,16 +14,8 @@ class Board(models.Model):
         _("created at"),
         auto_now_add=True,
     )
-
-
-class Tag(models.Model):
-    tag = models.CharField(
-        max_length=50,
+    updated_at = models.DateTimeField(
+        _("updated at"),
+        auto_now=True,
+        # default=timezone.now,
     )
-
-
-class BoardTag(models.Model):
-    """connect Board & Tag"""
-
-    board_id = models.ForeignKey(Board, on_delete=models.CASCADE)
-    tag_id = models.ForeignKey(Tag, on_delete=models.CASCADE)
