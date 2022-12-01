@@ -15,11 +15,11 @@ class Post(models.Model):
     )
     created_at = models.DateTimeField(
         _("created at"),
-        default=timezone.now,
+        auto_now_add=True,
     )
     updated_at = models.DateTimeField(
         _("updated at"),
-        default=timezone.now,
+        auto_now=True,
     )
     written_user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     board_id = models.ForeignKey("boards.Board", on_delete=models.CASCADE)
@@ -32,8 +32,8 @@ class Like(models.Model):
 
 class Comment(models.Model):
     content = models.TextField()
-    user_id = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name='comment_user')
-    post_id = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comment_post')
+    user_id = models.ForeignKey("users.User", on_delete=models.CASCADE)
+    post_id = models.ForeignKey(Post, on_delete=models.CASCADE)
     parent_comment_id = models.ForeignKey(
         "self",
         on_delete=models.CASCADE,
@@ -42,9 +42,28 @@ class Comment(models.Model):
     )
     created_at = models.DateTimeField(
         _("created at"),
-        default=timezone.now,
+        auto_now_add=True,
     )
     updated_at = models.DateTimeField(
         _("updated at"),
-        default=timezone.now,
+        auto_now=True,
     )
+
+class Hashtag(models.Model):
+    hashtag = models.CharField(
+        max_length=50,
+    )
+    created_at = models.DateTimeField(
+        _("created at"),
+        auto_now_add=True,
+    )
+    updated_at = models.DateTimeField(
+        _("updated at"),
+        auto_now=True,
+    )
+
+class PostHashTag(models.Model):
+    """connect Post & Tag"""
+
+    post_id = models.ForeignKey(Post, on_delete=models.CASCADE)
+    hashtag_id = models.ForeignKey(Hashtag, on_delete=models.CASCADE)
