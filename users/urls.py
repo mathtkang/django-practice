@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework.authtoken.views import obtain_auth_token
 from . import views
 
 app_name = "users"
@@ -10,4 +11,5 @@ urlpatterns = [
     path("logout", views.Logout.as_view()),
     path("<int:id>/role", views.UserRole.as_view()),
     path("change-password", views.ChangePassword.as_view()),
+    path("token-login", obtain_auth_token),
 ]

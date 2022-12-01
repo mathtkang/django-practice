@@ -1,12 +1,18 @@
+from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
 from .models import User
 from . import serializers
-from django.contrib.auth import authenticate, login, logout
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_404_NOT_FOUND,
 )
 from utils.auth import IsAdminUser
 
@@ -90,8 +96,19 @@ class UserRole(APIView):
     def put(self, request, id):
         """유저의 role 수정"""
         pass
-
-
 class ChangePassword(APIView):
-    pass
+    
+    permission_classes = [IsAuthenticated]
 
+    def put(self, request):
+        user = request.user
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+        if not old_password or not new_password:
+            raise ParseError  # HTTP_400
+        if user.check_password(old_password):
+            user.set_password(new_password)
+            user.save()
+            return Response(status=HTTP_200_OK)
+        else:
+            raise ParseError  # HTTP_400

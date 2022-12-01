@@ -29,6 +29,7 @@ class User(AbstractUser):
         max_length=5,
         choices=RoleChoices.choices,
     )
+    # is_staff, is_active 가 있는데, role을 해주는게 맞나?
     gender = models.CharField(
         max_length=6,
         choices=GenderChoices.choices,
