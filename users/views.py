@@ -1,3 +1,4 @@
+import jwt
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from .models import User
@@ -40,7 +41,6 @@ class Users(APIView):
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
-
 
 class Signup(APIView):
     def post(self, request):
@@ -96,8 +96,9 @@ class UserRole(APIView):
     def put(self, request, id):
         """유저의 role 수정"""
         pass
+
 class ChangePassword(APIView):
-    
+
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
@@ -112,3 +113,24 @@ class ChangePassword(APIView):
             return Response(status=HTTP_200_OK)
         else:
             raise ParseError  # HTTP_400
+
+class JWTLogin(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+        if not email or not password:
+            raise ParseError
+        user = authenticate(
+            request,
+            email=email,
+            password=password,
+        )
+        if user:
+            token = jwt.encode(
+                {"pk": user.pk},
+                settings.SECRET_KEY,
+                algorithm="HS256",
+            )
+            return Response({"token": token})
+        else:
+            return Response({"error": "wrong password"})
